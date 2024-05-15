@@ -27,16 +27,24 @@ export default function Page({ params: { room_name } }: Props) {
   const [connectionDetails, setConnectionDetails] =
     useState<ConnectionDetails | null>(null);
   const isMobile = useMobile();
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  //const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
 
   useEffect(() => {
-    setAudioContext(new AudioContext());
-    return () => {
-      setAudioContext((prev) => {
-        prev?.close();
-        return null;
-      });
-    };
+    const fetchQueryData = async function() {
+      const details = await requestConnectionDetails(
+        "123"
+      );
+      setConnectionDetails(details)
+    }
+    fetchQueryData()
+
+    // setAudioContext(new AudioContext());
+    // return () => {
+    //   setAudioContext((prev) => {
+    //     prev?.close();
+    //     return null;
+    //   });
+    // };
   }, []);
 
   const humanRoomName = useMemo(() => {
@@ -64,42 +72,56 @@ export default function Page({ params: { room_name } }: Props) {
     [room_name]
   );
 
-  if (!audioContext) {
-    return null;
-  }
+  // if (!audioContext) {
+  //   return null;
+  // }
 
   // If we don't have any connection details yet, show the username form
-  if (connectionDetails === null) {
-    return (
-      <div className="w-screen h-screen flex flex-col items-center justify-center">
-        <Toaster />
-        <h2 className="text-4xl mb-4">{humanRoomName}</h2>
-        <RoomInfo roomName={room_name} />
-        <div className="divider"></div>
-        <UsernameInput
-          submitText="Join Room"
-          onSubmit={async (username) => {
-            try {
-              // TODO unify this kind of pattern across examples, either with the `useToken` hook or an equivalent
-              const connectionDetails = await requestConnectionDetails(
-                username
-              );
-              setConnectionDetails(connectionDetails);
-            } catch (e: any) {
-              toast.error(e);
-            }
-          }}
-        />
-      </div>
-    );
-  }
+  // if (connectionDetails === null) {
+  //   return (
+  //     <div className="w-screen h-screen flex flex-col items-center justify-center">
+  //       <Toaster />
+  //       <h2 className="text-4xl mb-4">{humanRoomName}</h2>
+  //       <RoomInfo roomName={room_name} />
+  //       <div className="divider"></div>
+  //       <UsernameInput
+  //         submitText="Join Room"
+  //         onSubmit={async (username) => {
+  //           try {
+  //             // TODO unify this kind of pattern across examples, either with the `useToken` hook or an equivalent
+  //             const connectionDetails = await requestConnectionDetails(
+  //               username
+  //             );
+  //             setConnectionDetails(connectionDetails);
+  //           } catch (e: any) {
+  //             toast.error(e);
+  //           }
+  //         }}
+  //       />
+  //     </div>
+  //   );
+  // }
 
   // Show the room UI
   return (
     <div>
       <LiveKitRoom
-        token={connectionDetails.token}
-        serverUrl={connectionDetails.ws_url}
+        token={connectionDetails?.token}
+        serverUrl={connectionDetails?.ws_url}
+        connect={true}
+        connectOptions={{ autoSubscribe: false }}
+        audio={true}
+      >
+        <RoomAudioRenderer/>
+      </LiveKitRoom>
+    </div>
+  );
+}
+
+/*
+      <LiveKitRoom
+        token={connectionDetails?.token}
+        serverUrl={connectionDetails?.ws_url}
         connect={true}
         connectOptions={{ autoSubscribe: false }}
         options={{ expWebAudioMix: { audioContext } }}
@@ -113,13 +135,11 @@ export default function Page({ params: { room_name } }: Props) {
             >
               <div className="bg-neutral">
                 <BottomBar />
-        	<Transcriber></Transcriber>
+        	      <Transcriber></Transcriber>
               </div>
             </div>
           </div>
         </WebAudioContext.Provider>
         <RoomAudioRenderer/>
       </LiveKitRoom>
-    </div>
-  );
-}
+*/
