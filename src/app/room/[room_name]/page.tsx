@@ -5,12 +5,12 @@ import { BottomBar } from "@/components/BottomBar";
 import { RoomInfo } from "@/components/RoomInfo";
 import { UsernameInput } from "@/components/UsernameInput";
 import {Transcriber} from "@/components/Transcriber"
-
+import {RemoteParticipantController} from "@/components/RemoteParticipantController"
 import {
   ConnectionDetails,
   ConnectionDetailsBody,
 } from "@/pages/api/connection_details";
-import { LiveKitRoom } from "@livekit/components-react";
+import { LiveKitRoom} from "@livekit/components-react";
 import { RoomAudioRenderer} from "@livekit/components-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
@@ -113,7 +113,8 @@ export default function Page({ params: { room_name } }: Props) {
             >
               <div className="bg-neutral">
                 <BottomBar />
-        	<Transcriber></Transcriber>
+        	      <Transcriber></Transcriber>
+                <RemoteParticipantController></RemoteParticipantController>
               </div>
             </div>
           </div>
