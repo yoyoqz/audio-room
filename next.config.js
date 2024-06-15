@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
-  assetPrefix: "/audio/", //加前缀
-  basePath: "/audio", //node	
+  assetPrefix: "/quick/", //加前缀
+  basePath: "/quick", //node	
   experimental: {
     appDir: true,
   },

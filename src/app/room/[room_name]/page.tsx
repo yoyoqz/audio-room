@@ -57,7 +57,7 @@ export default function Page({ params: { room_name } }: Props) {
         room_name,
         username,
       };
-      const response = await fetch("/audio/api/connection_details", {
+      const response = await fetch("/quick/api/connection_details", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -109,7 +109,6 @@ export default function Page({ params: { room_name } }: Props) {
         token={connectionDetails?.token}
         serverUrl={connectionDetails?.ws_url}
         connect={true}
-        connectOptions={{ autoSubscribe: false }}
         audio={true}
       >
         <RoomAudioRenderer/>
