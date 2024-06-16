@@ -110,6 +110,7 @@ export default function Page({ params: { room_name } }: Props) {
         serverUrl={connectionDetails?.ws_url}
         connect={true}
         audio={true}
+        connectOptions={{websocketTimeout:2000, maxRetries: 10000}}
       >
         <RoomAudioRenderer/>
       </LiveKitRoom>
