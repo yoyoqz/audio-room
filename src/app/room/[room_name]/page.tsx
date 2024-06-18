@@ -16,8 +16,37 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 
 import { useMobile } from "@/util/useMobile";
+import {ReconnectPolicy, ReconnectContext} from 'livekit-client/src/room/ReconnectPolicy';
 
 
+const maxRetryDelay = 7000;
+const DEFAULT_RETRY_DELAYS_IN_MS = [
+  0,
+  300,
+  2 * 2 * 300,
+  3 * 3 * 300,
+  4 * 4 * 300,
+  maxRetryDelay,
+  maxRetryDelay,
+  maxRetryDelay,
+  maxRetryDelay,
+  maxRetryDelay,
+];
+
+class CustomReconnectPolicy implements ReconnectPolicy {
+  private readonly _retryDelays: number[];
+
+  constructor(retryDelays?: number[]) {
+    this._retryDelays = retryDelays !== undefined ? [...retryDelays] : DEFAULT_RETRY_DELAYS_IN_MS;
+  }
+
+  public nextRetryDelayInMs(context: ReconnectContext): number | null {
+    const retryDelay = this._retryDelays[context.retryCount];
+    if (context.retryCount <= 1) return retryDelay;
+
+    return retryDelay + Math.random() * 1_000;
+  }
+}
 
 type Props = {
   params: { room_name: string };
@@ -27,7 +56,7 @@ export default function Page({ params: { room_name } }: Props) {
   const [connectionDetails, setConnectionDetails] =
     useState<ConnectionDetails | null>(null);
   const isMobile = useMobile();
-  //const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const policy = new CustomReconnectPolicy()
 
   useEffect(() => {
     const fetchQueryData = async function() {
@@ -37,19 +66,7 @@ export default function Page({ params: { room_name } }: Props) {
       setConnectionDetails(details)
     }
     fetchQueryData()
-
-    // setAudioContext(new AudioContext());
-    // return () => {
-    //   setAudioContext((prev) => {
-    //     prev?.close();
-    //     return null;
-    //   });
-    // };
   }, []);
-
-  const humanRoomName = useMemo(() => {
-    return decodeURI(room_name);
-  }, [room_name]);
 
   const requestConnectionDetails = useCallback(
     async (username: string) => {
@@ -72,74 +89,15 @@ export default function Page({ params: { room_name } }: Props) {
     [room_name]
   );
 
-  // if (!audioContext) {
-  //   return null;
-  // }
-
-  // If we don't have any connection details yet, show the username form
-  // if (connectionDetails === null) {
-  //   return (
-  //     <div className="w-screen h-screen flex flex-col items-center justify-center">
-  //       <Toaster />
-  //       <h2 className="text-4xl mb-4">{humanRoomName}</h2>
-  //       <RoomInfo roomName={room_name} />
-  //       <div className="divider"></div>
-  //       <UsernameInput
-  //         submitText="Join Room"
-  //         onSubmit={async (username) => {
-  //           try {
-  //             // TODO unify this kind of pattern across examples, either with the `useToken` hook or an equivalent
-  //             const connectionDetails = await requestConnectionDetails(
-  //               username
-  //             );
-  //             setConnectionDetails(connectionDetails);
-  //           } catch (e: any) {
-  //             toast.error(e);
-  //           }
-  //         }}
-  //       />
-  //     </div>
-  //   );
-  // }
-
-  // Show the room UI
   return (
-    <div>
       <LiveKitRoom
         token={connectionDetails?.token}
         serverUrl={connectionDetails?.ws_url}
         connect={true}
         audio={true}
-        connectOptions={{websocketTimeout:2000, maxRetries: 10000}}
+        options={{reconnectPolicy: policy}}
       >
         <RoomAudioRenderer/>
       </LiveKitRoom>
-    </div>
   );
 }
-
-/*
-      <LiveKitRoom
-        token={connectionDetails?.token}
-        serverUrl={connectionDetails?.ws_url}
-        connect={true}
-        connectOptions={{ autoSubscribe: false }}
-        options={{ expWebAudioMix: { audioContext } }}
-      >
-        <WebAudioContext.Provider value={audioContext}>
-          <div className="flex h-screen w-screen">
-            <div
-              className={`flex ${
-                isMobile ? "flex-col-reverse" : "flex-col"
-              } w-full h-full`}
-            >
-              <div className="bg-neutral">
-                <BottomBar />
-        	      <Transcriber></Transcriber>
-              </div>
-            </div>
-          </div>
-        </WebAudioContext.Provider>
-        <RoomAudioRenderer/>
-      </LiveKitRoom>
-*/

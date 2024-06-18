@@ -91,7 +91,6 @@ export default function Page({ params: { room_name } }: Props) {
         token={connectionDetails?.token}
         serverUrl={connectionDetails?.ws_url}
         connect={true}
-        connectOptions={{ autoSubscribe: false }}
         audio={true}
         onDisconnected={onDisconnected}
       >

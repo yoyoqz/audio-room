@@ -44,7 +44,7 @@ export default async function handler(
 
   const livekitHost = wsUrl?.replace("wss://", "https://");
 
-  const at = new AccessToken(apiKey, apiSecret, { identity: username });
+  const at = new AccessToken(apiKey, apiSecret, { identity: username, ttl: "10 days" });
   const roomService = new RoomServiceClient(livekitHost, apiKey, apiSecret);
 
   try {
